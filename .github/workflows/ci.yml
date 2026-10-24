@@ -1,0 +1,28 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  formulae:
+    runs-on: macos-latest
+    env:
+      HOMEBREW_NO_AUTO_UPDATE: "1"
+      HOMEBREW_NO_INSTALL_CLEANUP: "1"
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - name: Install and test every formula from this checkout
+        run: |
+          brew tap dheerajjha/tap "$GITHUB_WORKSPACE"
+          for f in Formula/*.rb; do
+            name="dheerajjha/tap/$(basename "$f" .rb)"
+            brew install --formula "$name"
+            brew test "$name"
+          done
